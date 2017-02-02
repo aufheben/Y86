@@ -103,14 +103,14 @@ register = do
   char '%'
   s <- word
   let r = case s of
-            "eax" -> Reg 0
-            "ecx" -> Reg 1
-            "edx" -> Reg 2
-            "ebx" -> Reg 3
-            "esp" -> Reg 4
-            "ebp" -> Reg 5
-            "esi" -> Reg 6
-            "edi" -> Reg 7
+            "eax" -> 0
+            "ecx" -> 1
+            "edx" -> 2
+            "ebx" -> 3
+            "esp" -> 4
+            "ebp" -> 5
+            "esi" -> 6
+            "edi" -> 7
             x     -> error $ "Invalid register: " ++ x
   return r
 

@@ -1,14 +1,14 @@
 module Types where
 
+import Data.Word
+
 -- Constant is either an int or a label which resolves to an int
 type Label    = String
 type Constant = Either Int Label
+type Reg      = Word8
 
-newtype Reg = Reg Int
-        deriving Show
-
-data Instr = Nop
-           | Halt
+data Instr = Halt
+           | Nop
            | Rrmovl Reg Reg
            | Irmovl Reg Constant
            | Rmmovl Reg Reg Int
