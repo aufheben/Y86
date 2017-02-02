@@ -1,3 +1,5 @@
+module Parser where
+
 import Data.Char
 import Control.Applicative
 import NanoParsec
@@ -31,18 +33,18 @@ directive = do
 label :: Parser String
 label = endsWith ':'
 
-instruction :: Parser Instr
+instruction :: Parser (Instr, Int)
 instruction = do
   s <- word
   case s of
-    "nop"    -> return Nop
-    "halt"   -> return Halt
+    "halt"   -> return (Halt, 1)
+    "nop"    -> return (Nop, 1)
     "rrmovl" -> reg_reg Rrmovl
     "irmovl" -> do
       c <- constant
       token $ char ','
       r <- register
-      return $ Irmovl r c
+      return (Irmovl r c, 6)
     "rmmovl" -> do
       r1 <- register
       token $ char ','
@@ -50,7 +52,7 @@ instruction = do
       token $ char '('
       r2 <- register
       token $ char ')'
-      return $ Rmmovl r1 r2 d
+      return (Rmmovl r1 r2 d, 6)
     "mrmovl" -> do
       d  <- number <|> return 0
       token $ char '('
@@ -58,7 +60,7 @@ instruction = do
       token $ char ')'
       token $ char ','
       r2 <- register
-      return $ Mrmovl r1 r2 d
+      return (Mrmovl r1 r2 d, 6)
     "addl"   -> reg_reg Addl
     "xorl"   -> reg_reg Xorl
     "subl"   -> reg_reg Subl
@@ -77,24 +79,24 @@ instruction = do
     "cmovge" -> reg_reg Cmovge
     "cmovg"  -> reg_reg Cmovg
     "call"   -> lbl Call
-    "ret"    -> return Ret
+    "ret"    -> return (Ret, 1)
     "pushl"  -> reg Pushl
     "popl"   -> reg Popl
     x -> error $ "Invalid instruction: " ++ x
   where
   reg instr = do
     r <- register
-    return $ instr r
+    return (instr r, 2)
 
   reg_reg instr = do
     r1 <- register
     token $ char ','
     r2 <- register
-    return $ instr r1 r2
+    return (instr r1 r2, 2)
 
   lbl instr = do
     dst <- word
-    return $ instr dst
+    return (instr dst, 5)
 
 register :: Parser Reg
 register = do

@@ -36,7 +36,7 @@ data Instr = Nop
            | Popl   Reg
     deriving Show
 
-data Entity = Instr Instr
+data Entity = Instr (Instr, Int)
             | Directive (String, Int)
             | Label Label
     deriving Show
