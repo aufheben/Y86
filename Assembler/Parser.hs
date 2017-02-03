@@ -57,10 +57,10 @@ instruction = do
     "mrmovl" -> do
       d  <- number <|> return 0
       token $ char '('
-      r1 <- register
+      r2 <- register
       token $ char ')'
       token $ char ','
-      r2 <- register
+      r1 <- register
       return (Mrmovl r1 r2 d, 6)
     "addl"   -> reg_reg Addl
     "xorl"   -> reg_reg Xorl
