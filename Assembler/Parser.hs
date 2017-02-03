@@ -1,6 +1,7 @@
 module Parser where
 
 import Data.Char
+import Data.Maybe
 import Control.Applicative
 import NanoParsec
 import Types
@@ -102,16 +103,8 @@ register :: Parser Reg
 register = do
   char '%'
   s <- word
-  let r = case s of
-            "eax" -> 0
-            "ecx" -> 1
-            "edx" -> 2
-            "ebx" -> 3
-            "esp" -> 4
-            "ebp" -> 5
-            "esi" -> 6
-            "edi" -> 7
-            x     -> error $ "Invalid register: " ++ x
+  let r = fromJust $ lookup s [("eax", 0), ("ecx", 1), ("edx", 2), ("ebx", 3),
+                               ("esp", 4), ("ebp", 5), ("esi", 6), ("edi", 7)]
   return r
 
 -- $15, $-1, $0xABC
