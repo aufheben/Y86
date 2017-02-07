@@ -13,10 +13,10 @@ and `ByteString` represents the output object code.
 
 In Y86 assembly, the code and static data can be interleaved, with directives such as
 `.pos` and `.align` affecting their placement. Labels are used to mark addresses.
-Therefore the program can be represented as a list of entities which can be
+Therefore the program can be represented as a list of entities, which can be
 instructions, directives, or labels:
 
-```
+```haskell
 type Label   = String
 
 data Entity  = Instr (Instr, Int)      -- an instruction and the number of bytes to encode it
@@ -28,7 +28,7 @@ type Program = [Entity]
 
 The `Instr` type is a direct translation from the Y86 instructions:
 
-```
+```haskell
 -- Constant is either an int or a label which resolves to an int
 type Constant = Either Int Label
 
@@ -54,16 +54,16 @@ The assembler can be defined in 3 steps:
 ### Parsing
 
 Now, to write `parse`, we could use a parser generator such as [Happy](https://www.haskell.org/happy/doc/html/index.html),
-or define it directly with a parser combinator library, such as Parsec. However,
-since the Y86 assembly is very simple, why not define our own parser combinators,
-keeping the spirit of "reinventing the wheel".
+or define it directly with a parser combinator library, such as [Parsec](https://hackage.haskell.org/package/parsec).
+However, Parsec might be a bit overkill for parsing the Y86 assembly, we can
+actually keep things easy by defining our own parser combinators.
 
 The [NanoParsec](http://dev.stephendiehl.com/fun/002_parsers.html)
 by [Stephen Diehl](http://www.stephendiehl.com/) is very simple and shows how
 a parser combinator library can be constructed. Let's steal it and make some
 small changes. With NanoParsec, a parser for an entity is simply:
 
-```
+```haskell
 entity :: Parser Entity
 entity = do
   many comment -- skip comments
