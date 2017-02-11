@@ -7,7 +7,7 @@ license:             BSD3
 license-file:        LICENSE
 author:              Yifan Yu
 maintainer:          yvifan@gmail.com
-copyright:           2016 Yifan Yu
+copyright:           2017 Yifan Yu
 category:            Unknown
 build-type:          Simple
 extra-source-files:  README.md
