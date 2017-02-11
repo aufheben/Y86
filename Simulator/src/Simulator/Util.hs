@@ -22,11 +22,11 @@ readReg :: Word8 -> CpuState -> Word32
 readReg r = fun r [(0, _eax), (1, _ecx), (2, _edx), (3, _ebx),
                    (4, _esp), (5, _ebp), (6, _esi), (7, _edi)]
 
-regSetter :: Reg -> ASetter' CpuState Word32
+regSetter :: RegId -> ASetter' CpuState Word32
 regSetter r = fun r [(0, eax), (1, ecx), (2, edx), (3, ebx),
                      (4, esp), (5, ebp), (6, esi), (7, edi)]
 
-showReg :: Reg -> String
+showReg :: RegId -> String
 showReg r = fun r [(0, "%eax"), (1, "%ecx"), (2, "%edx"), (3, "%ebx"),
                    (4, "%esp"), (5, "%ebp"), (6, "%esi"), (7, "%edi")]
 

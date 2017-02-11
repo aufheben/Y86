@@ -6,18 +6,18 @@ import Control.Lens
 import Data.Word
 import qualified Data.Vector.Mutable as V
 
-type Reg   = Word8
+type RegId = Word8
 
 data Instr = Halt
            | Nop
-           | Rrmovl Reg Reg
-           | Irmovl Reg Word32
-           | Rmmovl Reg Reg Word32
-           | Mrmovl Reg Reg Word32
-           | Addl   Reg Reg
-           | Subl   Reg Reg
-           | Andl   Reg Reg
-           | Xorl   Reg Reg
+           | Rrmovl RegId RegId
+           | Irmovl RegId Word32
+           | Rmmovl RegId RegId Word32
+           | Mrmovl RegId RegId Word32
+           | Addl   RegId RegId
+           | Subl   RegId RegId
+           | Andl   RegId RegId
+           | Xorl   RegId RegId
            | Jmp    Word32
            | Jle    Word32
            | Jl     Word32
@@ -25,16 +25,16 @@ data Instr = Halt
            | Jne    Word32
            | Jge    Word32
            | Jg     Word32
-           | Cmovle Reg Reg
-           | Cmovl  Reg Reg
-           | Cmove  Reg Reg
-           | Cmovne Reg Reg
-           | Cmovge Reg Reg
-           | Cmovg  Reg Reg
+           | Cmovle RegId RegId
+           | Cmovl  RegId RegId
+           | Cmove  RegId RegId
+           | Cmovne RegId RegId
+           | Cmovge RegId RegId
+           | Cmovg  RegId RegId
            | Call   Word32
            | Ret
-           | Pushl  Reg
-           | Popl   Reg
+           | Pushl  RegId
+           | Popl   RegId
            | Excpt
 
 data Stat = AOK | HLT | ADR | INS
