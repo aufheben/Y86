@@ -35,6 +35,8 @@ writeWord32 ram addr w = do
   let bytes = runPut (putWord32le w)
   writeBytes ram addr (B.unpack bytes)
 
+----- utilities for decoding instructions
+
 readRR ram _pc = decodeRegs . head <$> readBytes ram (_pc + 1) 1
 
 readRRL ram _pc = do

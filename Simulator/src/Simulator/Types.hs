@@ -4,6 +4,7 @@ module Simulator.Types where
 
 import Control.Lens
 import Data.Word
+import qualified Data.Vector.Mutable as V
 
 type Reg   = Word8
 
@@ -34,10 +35,10 @@ data Instr = Halt
            | Ret
            | Pushl  Reg
            | Popl   Reg
-           | Invalid
+           | Excpt
 
 data Stat = AOK | HLT | ADR | INS
-  deriving Show
+  deriving (Show, Eq)
 
 data CpuState = CpuState
   { _eax  :: Word32
@@ -59,3 +60,5 @@ makeLenses ''CpuState
 
 initState :: CpuState
 initState = CpuState 0 0 0 0 0 0 0 0 0 False False False AOK
+
+type RAM = V.IOVector Word8

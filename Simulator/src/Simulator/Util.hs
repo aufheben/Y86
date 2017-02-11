@@ -1,4 +1,10 @@
-module Simulator.Util where
+module Simulator.Util
+  ( decodeRegs
+  , readReg
+  , regSetter
+  , formatCpuState
+  , formatInstr
+  ) where
 
 import Control.Lens
 import Data.Bits
@@ -33,10 +39,12 @@ showFlag _    = "0"
 
 formatCpuState :: CpuState -> String
 formatCpuState CpuState {..} =
-  unwords ["PC:", f _pc, "ZF:", g _zF, "SF:", g _sF,
-           "OF:", g _oF, "STAT:", show _stat, "\n",
-           "%eax:", f _eax, "%ecx:", f _ecx, "%edx:", f _edx, "%ebx:", f _ebx,
-           "%esi:", f _esi, "%edi:", f _edi, "%esp:", f _esp, "%ebp:", f _ebp]
+  unlines
+    [ unwords ["PC:", f _pc, "ZF:", g _zF, "SF:", g _sF,
+               "OF:", g _oF, "STAT:", show _stat],
+      unwords ["%eax:", f _eax, "%ecx:", f _ecx, "%edx:", f _edx, "%ebx:", f _ebx,
+               "%esi:", f _esi, "%edi:", f _edi, "%esp:", f _esp, "%ebp:", f _ebp]
+    ]
   where
   f = showHex
   g = showFlag
@@ -69,7 +77,7 @@ formatInstr (Call d)         = dst "call" d
 formatInstr Ret              = "ret"
 formatInstr (Pushl ra)       = "pushl " ++ showReg ra
 formatInstr (Popl ra)        = "popl " ++ showReg ra
-formatInstr Invalid          = "Invalid instruction"
+formatInstr Excpt            = "Exception"
 
 dst i d     = unwords [i, showHex d]
 irr i ra rb = unwords [i, showHex ra ++ ",", showHex rb]
