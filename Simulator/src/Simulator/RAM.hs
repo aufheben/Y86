@@ -6,10 +6,11 @@ import Data.Word
 import Data.Serialize.Get
 import Data.Serialize.Put
 import Simulator.Util
+import Simulator.Types
 import qualified Data.Vector.Mutable as V
 import qualified Data.ByteString as B
 
-readBytes :: Integral a => V.IOVector Word8 -> a -> Int -> IO [Word8]
+readBytes :: Integral a => RAM -> a -> Int -> IO [Word8]
 readBytes ram addr cnt = rd (fromIntegral addr) cnt
   where
   rd _ 0 = return []
@@ -18,19 +19,19 @@ readBytes ram addr cnt = rd (fromIntegral addr) cnt
     bs <- rd (i + 1) (n - 1)
     return (b:bs)
 
-writeBytes :: Integral a => V.IOVector Word8 -> a -> [Word8] -> IO ()
+writeBytes :: Integral a => RAM -> a -> [Word8] -> IO ()
 writeBytes ram addr bytes = wr (fromIntegral addr) bytes
   where
   wr _ []     = return ()
   wr i (x:xs) = V.write ram i x >> wr (i + 1) xs
 
-readWord32 :: Integral a => V.IOVector Word8 -> a -> IO Word32
+readWord32 :: Integral a => RAM -> a -> IO Word32
 readWord32 ram addr = do
   bs <- B.pack <$> readBytes ram addr 4
   let (Right w) = runGet getWord32le bs
   return w
 
-writeWord32 :: Integral a => V.IOVector Word8 -> a -> Word32 -> IO ()
+writeWord32 :: Integral a => RAM -> a -> Word32 -> IO ()
 writeWord32 ram addr w = do
   let bytes = runPut (putWord32le w)
   writeBytes ram addr (B.unpack bytes)
