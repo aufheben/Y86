@@ -37,6 +37,8 @@ executable yis
   build-depends:       base
                      , vector
                      , bytestring
+                     , mtl
+                     , lifted-base
                      , Simulator
   default-language:    Haskell2010
 

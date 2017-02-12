@@ -2,51 +2,59 @@
 
 module Simulator.RAM where
 
+import Control.Monad.IO.Class
+import Control.Monad.State
 import Data.Word
 import Data.Serialize.Get
 import Data.Serialize.Put
+import Prelude hiding (putStrLn)
 import Simulator.Util
 import Simulator.Types
 import Text.Printf
 import qualified Data.Vector.Mutable as V
 import qualified Data.ByteString as B
 
-readBytes :: Integral a => RAM -> a -> Int -> IO [Word8]
-readBytes ram addr cnt = rd (fromIntegral addr) cnt
+readBytes :: Integral a => a -> Int -> SimIO [Word8]
+readBytes addr cnt = get >>= rd (fromIntegral addr) cnt
   where
-  rd _ 0 = return []
-  rd i n = do
-    b  <- V.read ram i
-    bs <- rd (i + 1) (n - 1)
+  rd _ 0 _   = return []
+  rd i n ram = do
+    b  <- liftIO $ V.read ram i
+    bs <- rd (i + 1) (n - 1) ram
     return (b:bs)
 
-writeBytes :: Integral a => RAM -> a -> [Word8] -> IO ()
-writeBytes ram addr bytes = wr (fromIntegral addr) bytes
+writeBytes :: Integral a => a -> [Word8] -> SimIO ()
+writeBytes addr bytes = get >>= wr (fromIntegral addr) bytes
   where
-  wr _ []     = return ()
-  wr i (x:xs) = V.write ram i x >> wr (i + 1) xs
+  wr _ []     _   = return ()
+  wr i (x:xs) ram = liftIO (V.write ram i x) >> wr (i + 1) xs ram
 
-readWord32 :: Integral a => RAM -> a -> IO Word32
-readWord32 ram addr = do
-  bs <- B.pack <$> readBytes ram addr 4
+readWord32 :: Integral a => a -> SimIO Word32
+readWord32 addr = do
+  bs <- B.pack <$> readBytes addr 4
   let (Right w) = runGet getWord32le bs
   return w
 
-writeWord32 :: Integral a => RAM -> a -> Word32 -> IO ()
-writeWord32 ram addr w = do
+writeWord32 :: Integral a => a -> Word32 -> SimIO ()
+writeWord32 addr w = do
   let bytes = runPut (putWord32le w)
-  writeBytes ram addr (B.unpack bytes)
+  writeBytes addr (B.unpack bytes)
 
-printRAM :: Integral a => RAM -> a -> Int -> IO ()
-printRAM ram addr cnt =
-  readBytes ram addr cnt >>=
+clearRAM :: SimIO ()
+clearRAM = do
+  ram <- get
+  liftIO $ V.set ram 0
+
+printRAM :: Integral a => a -> Int -> SimIO ()
+printRAM addr cnt =
+  readBytes addr cnt >>=
     putStrLn . unwords . map (printf "%02x")
 
 ----- utilities for decoding instructions
 
-readRR ram _pc = decodeRegs . head <$> readBytes ram (_pc + 1) 1
+readRR _pc = decodeRegs . head <$> readBytes (_pc + 1) 1
 
-readRRL ram _pc = do
-  (ra, rb) <- readRR ram _pc
-  w        <- readWord32 ram (_pc + 2)
+readRRL _pc = do
+  (ra, rb) <- readRR _pc
+  w        <- readWord32 (_pc + 2)
   return (ra, rb, w)

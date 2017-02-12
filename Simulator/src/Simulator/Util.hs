@@ -4,14 +4,18 @@ module Simulator.Util
   , regSetter
   , formatCpuState
   , formatInstr
+  , putStrLn
   ) where
 
 import Control.Lens
+import Control.Monad.IO.Class
 import Data.Bits
 import Data.Maybe
 import Data.Word
+import Prelude hiding (putStrLn)
 import Simulator.Types
 import Text.Printf
+import qualified Prelude as P
 
 decodeRegs :: Word8 -> (Word8, Word8)
 decodeRegs w = (shiftR w 4, w .&. 0x0F)
@@ -82,3 +86,6 @@ formatInstr Excpt            = "Exception"
 dst i d     = unwords [i, showHex d]
 irr i ra rb = unwords [i, showHex ra ++ ",", showHex rb]
 dr d r      = showHex d ++ "(" ++ showReg r ++ ")"
+
+putStrLn :: MonadIO m => String -> m ()
+putStrLn = liftIO . P.putStrLn
