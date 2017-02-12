@@ -86,6 +86,11 @@ main = do
         go ram s'
       "run":_   -> runProgram ram s >>= go ram
       "reset":_ -> V.set ram 0 >> go ram initState
+      cmd:addr:_ | take 2 cmd == "x/" -> do
+        let n = read (drop 2 cmd) :: Int
+            a = read addr :: Int
+        printRAM ram a n
+        go ram s
       _ -> putStrLn "Invalid command" >> go ram s
 
   -- TODO: break, frame, and more commands from GDB

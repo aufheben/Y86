@@ -7,6 +7,7 @@ import Data.Serialize.Get
 import Data.Serialize.Put
 import Simulator.Util
 import Simulator.Types
+import Text.Printf
 import qualified Data.Vector.Mutable as V
 import qualified Data.ByteString as B
 
@@ -35,6 +36,11 @@ writeWord32 :: Integral a => RAM -> a -> Word32 -> IO ()
 writeWord32 ram addr w = do
   let bytes = runPut (putWord32le w)
   writeBytes ram addr (B.unpack bytes)
+
+printRAM :: Integral a => RAM -> a -> Int -> IO ()
+printRAM ram addr cnt =
+  readBytes ram addr cnt >>=
+    putStrLn . unwords . map (printf "%02x")
 
 ----- utilities for decoding instructions
 
