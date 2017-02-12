@@ -73,18 +73,26 @@ main = do
     case xs of
       "quit":_ -> return ()
       "load":file:_ -> do
-        -- TODO: clear RAM
         r <- try $ do
           prog <- B.readFile file
           loadProgram ram prog
         case r of
           Left (SomeException _) -> putStrLn $ "Couldn't load " ++ file
-          Right _ -> putStrLn "Program loaded, type 'run' to execute or Enter to step"
+          Right _                -> help
         go ram initState
-      "run":_ -> runProgram ram s >>= go ram
       [] -> do
         (s', i) <- step ram s
         mapM_ putStrLn [formatInstr i, formatCpuState s']
         go ram s'
-      -- TODO: inspect RAM
+      "run":_   -> runProgram ram s >>= go ram
+      "reset":_ -> V.set ram 0 >> go ram initState
       _ -> putStrLn "Invalid command" >> go ram s
+
+  -- TODO: break, frame, and more commands from GDB
+  help = putStrLn . unlines $
+    [ "Program loaded, now you can type:"
+    , "- Enter to step an instruction"
+    , "- 'run' to start or continue execution"
+    , "- 'reset' to reset CPU states and memory"
+    , "- 'x/N ADDR' to examine N bytes of memory at address ADDR"
+    ]
