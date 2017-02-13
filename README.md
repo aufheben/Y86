@@ -5,6 +5,18 @@ assembler, simulator, C compiler, etc. in Haskell.
 We try to write everything from scratch, as the initial motivation to start this
 project is to reinvent the wheels and perhaps have some fun along the way.
 
+At the moment each subproject has to be built individually. For example:
+
+```bash
+# install `yas` to ~/.local/bin
+cd Assembler
+stack setup
+stack install
+
+# generate object file (.ybo)
+yas asm/asum.ys
+```
+
 ## Assembler
 
 In Haskell terms, an assembler can be thought as a function of the type
@@ -73,3 +85,31 @@ entity = do
 Neat.
 
 ### Assembling
+
+During assembling a serialization library such as [cereal](http://hackage.haskell.org/package/cereal)
+would be very helpful, however we need to track the _current address_ as a state, therefore we
+could use a monad transformer to build our custom `Put` monad:
+
+```haskell
+type Put = WriterT Builder (State Int) ()
+```
+
+where `Builder` comes from `Data.ByteString.Builder` for building the `ByteString`, and
+`Int` represents the current address.
+
+The first step in assembling is to build the _label to address_ mapping of type `Map Label Int`
+by traversing the `[Entity]` (done with `genLabelMap`). Note that during the process the
+`.align N` directive will add some padding to the code so that the following address will
+be divisible by N, while `.byte`, `.word` and `.long` will add 1, 2 and 4 bytes respectively.
+
+`putEntity` creates a `Put` for an instruction or directive (labels won't _put_ anything).
+
+```
+putEntity :: Map Label Int -> Entity -> Put
+```
+
+Now we just need to map this function into our list of entities to obtain a list of `Put` monads,
+and use `sequence_` to combine them into one big `Put`. Run it, we'll have the desired
+`Builder`. Use `toLazyByteString` to execute it, and we are done.
+
+## Simulator
