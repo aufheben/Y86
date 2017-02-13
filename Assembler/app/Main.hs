@@ -94,6 +94,7 @@ putDirective s n = do
     "align" -> do
       let n_padding = n - addr `mod` n
       sequence_ $ replicate n_padding (putWord8 0)
+      put (addr + n_padding)
     "byte"  -> putWord8 (fromIntegral n) >> put (addr + 1)
     "word"  -> putWord16le (fromIntegral n) >> put (addr + 2)
     "long"  -> putWord32le (fromIntegral n) >> put (addr + 4)
