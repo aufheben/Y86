@@ -13,6 +13,7 @@ import Data.Word
 import Prelude hiding (lookup)
 import System.Environment
 import System.FilePath
+import Text.Printf
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Builder as B
 
@@ -124,6 +125,12 @@ main = do
         p  = sequence $ map (putEntity mp) xs
         ((_, builder), n) = runState (runWriterT p) 0
         ybo = takeBaseName path ++ ".ybo"
-        -- bin = takeBaseName path ++ ".bin"
     putStrLn $ ybo ++ " size: " ++ show n
     L.writeFile ybo $ toLazyByteString builder
+    write_data ybo
+
+  write_data path = do
+    xs <- L.unpack <$> L.readFile path
+    let builder = mconcat $ map (string8 . printf "%08b\n") xs
+        dat     = takeBaseName path ++ ".data"
+    L.writeFile dat $ toLazyByteString builder
