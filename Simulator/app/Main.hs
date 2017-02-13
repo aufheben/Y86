@@ -11,6 +11,8 @@ import Simulator.ISA
 import Simulator.RAM
 import Simulator.Types
 import Simulator.Util
+import System.Environment
+import System.IO (hFlush, stdout)
 import qualified Data.ByteString as B
 import qualified Data.Vector.Mutable as V
 
@@ -66,36 +68,37 @@ runProgram s =
 
 main :: IO ()
 main = do
-  putStrLn "Type 'load FILENAME' to load a program, 'quit' to exit"
   ram  <- V.replicate (2 ^ (16 :: Int)) 0
-  evalStateT (go initState) ram
+  args <- getArgs
+  case args of
+    []  -> do
+      putStrLn "Type 'load FILENAME' to load a program, 'quit' to exit"
+      evalStateT (go initState) ram
+    f:_ -> do
+      evalStateT (load f) ram
   where
   go :: CpuState -> SimIO ()
   go s = do
-    liftIO $ putStr "> "
+    -- why is hFlush needed (but not when calling main from ghci)
+    liftIO $ putStr "> " >> hFlush stdout
     xs <- words <$> liftIO getLine
     case xs of
-      "quit":_ -> return ()
-      "load":file:_ -> do
-        r <- try $ do
-          prog <- liftIO $ B.readFile file
-          loadProgram prog
-        case r of
-          Left (SomeException _) -> putStrLn $ "Couldn't load " ++ file
-          Right _                -> help
-        go initState
-      [] -> do
-        (s', i) <- step s
-        mapM_ putStrLn [formatInstr i, formatCpuState s']
-        go s'
-      "run":_   -> runProgram s >>= go
-      "reset":_ -> clearRAM >> go initState
-      cmd:addr:_ | take 2 cmd == "x/" -> do
-        let n = read (drop 2 cmd) :: Int
-            a = read addr :: Int
-        printRAM a n
-        go s
+      "quit":_      -> return ()
+      "load":file:_ -> load file
+      []            -> stepi s
+      "run":_       -> runProgram s >>= go
+      "reset":_     -> clearRAM >> go initState
+      cmd:addr:_ | take 2 cmd == "x/" -> xram s cmd addr
       _ -> putStrLn "Invalid command" >> go s
+
+  load file = do
+    r <- try $ do
+      prog <- liftIO $ B.readFile file
+      loadProgram prog
+    case r of
+      Left (SomeException _) -> putStrLn $ "Couldn't load " ++ file
+      Right _                -> help
+    go initState
 
   -- TODO: break, frame, and more commands from GDB
   help = putStrLn . unlines $
@@ -105,3 +108,15 @@ main = do
     , "- 'reset' to reset CPU states and memory"
     , "- 'x/N ADDR' to examine N bytes of memory at address ADDR"
     ]
+
+  stepi s = do
+    (s', i) <- step s
+    mapM_ putStrLn [formatInstr i, formatCpuState s']
+    go s'
+
+  xram s cmd addr =
+    handle (\(SomeException _) -> putStrLn "failed to parse command" >> go s) $ do
+      let n = read (drop 2 cmd) :: Int
+          a = read addr :: Int
+      printRAM a n
+      go s
