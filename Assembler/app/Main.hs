@@ -11,6 +11,8 @@ import Data.Map hiding (map)
 import Data.Maybe
 import Data.Word
 import Prelude hiding (lookup)
+import System.Environment
+import System.FilePath
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Builder as B
 
@@ -109,10 +111,18 @@ putEntity mp e =
 
 main :: IO ()
 main = do
-  s <- readFile "asm/asum.ys"
-  let xs = runParser entities s
-      mp = genLabelMap xs
-      p  = sequence $ map (putEntity mp) xs
-      ((_, builder), n) = runState (runWriterT p) 0
-  putStrLn $ "Object file size: " ++ show n
-  L.writeFile "a.out" $ toLazyByteString builder
+  args <- getArgs
+  case args of
+    [] -> putStrLn "yas FILE1 FILE2 .."
+    xs -> mapM_ assemble xs
+  where
+  assemble path = do
+    s <- readFile path
+    let xs = runParser entities s
+        mp = genLabelMap xs
+        p  = sequence $ map (putEntity mp) xs
+        ((_, builder), n) = runState (runWriterT p) 0
+        ybo = takeBaseName path ++ ".ybo"
+        -- bin = takeBaseName path ++ ".bin"
+    putStrLn $ ybo ++ " size: " ++ show n
+    L.writeFile ybo $ toLazyByteString builder
