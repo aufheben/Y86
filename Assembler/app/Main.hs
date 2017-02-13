@@ -122,8 +122,8 @@ main = do
     s <- readFile path
     let xs = runParser entities s
         mp = genLabelMap xs
-        p  = sequence $ map (putEntity mp) xs
-        ((_, builder), n) = runState (runWriterT p) 0
+        p  = sequence_ $ map (putEntity mp) xs
+        (builder, n) = runState (execWriterT p) 0
         ybo = takeBaseName path ++ ".ybo"
     putStrLn $ ybo ++ " size: " ++ show n
     L.writeFile ybo $ toLazyByteString builder
