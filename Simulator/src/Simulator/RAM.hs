@@ -3,7 +3,7 @@
 module Simulator.RAM where
 
 import Control.Monad.IO.Class
-import Control.Monad.State
+import Control.Monad.Reader
 import Data.Word
 import Data.Serialize.Get
 import Data.Serialize.Put
@@ -15,7 +15,7 @@ import qualified Data.Vector.Mutable as V
 import qualified Data.ByteString as B
 
 readBytes :: Integral a => a -> Int -> SimIO [Word8]
-readBytes addr cnt = get >>= rd (fromIntegral addr) cnt
+readBytes addr cnt = ask >>= rd (fromIntegral addr) cnt
   where
   rd _ 0 _   = return []
   rd i n ram = do
@@ -24,7 +24,7 @@ readBytes addr cnt = get >>= rd (fromIntegral addr) cnt
     return (b:bs)
 
 writeBytes :: Integral a => a -> [Word8] -> SimIO ()
-writeBytes addr bytes = get >>= wr (fromIntegral addr) bytes
+writeBytes addr bytes = ask >>= wr (fromIntegral addr) bytes
   where
   wr _ []     _   = return ()
   wr i (x:xs) ram = liftIO (V.write ram i x) >> wr (i + 1) xs ram
@@ -42,7 +42,7 @@ writeWord32 addr w = do
 
 clearRAM :: SimIO ()
 clearRAM = do
-  ram <- get
+  ram <- ask
   liftIO $ V.set ram 0
 
 printRAM :: Integral a => a -> Int -> SimIO ()

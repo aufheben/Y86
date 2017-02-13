@@ -3,7 +3,7 @@
 module Simulator.Types where
 
 import Control.Lens
-import Control.Monad.State
+import Control.Monad.Reader
 import Data.Word
 import qualified Data.Vector.Mutable as V
 
@@ -63,4 +63,4 @@ initState :: CpuState
 initState = CpuState 0 0 0 0 0 0 0 0 0 False False False AOK
 
 type RAM   = V.IOVector Word8
-type SimIO = StateT RAM IO
+type SimIO = ReaderT RAM IO

@@ -5,7 +5,7 @@ module Main where
 
 import Control.Exception.Lifted
 import Control.Monad.IO.Class
-import Control.Monad.State
+import Control.Monad.Reader
 import Prelude hiding (putStrLn)
 import Simulator.ISA
 import Simulator.RAM
@@ -55,7 +55,7 @@ step s =
         _    -> return (s { _stat = INS }, Excpt)
 
 loadProgram :: B.ByteString -> SimIO ()
-loadProgram prog = get >>= load 0 (B.unpack prog)
+loadProgram prog = ask >>= load 0 (B.unpack prog)
   where
   load _ []     _   = return ()
   load i (x:xs) ram = liftIO (V.write ram i x) >> load (i + 1) xs ram
@@ -73,9 +73,9 @@ main = do
   case args of
     []  -> do
       putStrLn "Type 'load FILENAME' to load a program, 'quit' to exit"
-      evalStateT (go initState) ram
+      runReaderT (go initState) ram
     f:_ -> do
-      evalStateT (load f) ram
+      runReaderT (load f) ram
   where
   go :: CpuState -> SimIO ()
   go s = do
