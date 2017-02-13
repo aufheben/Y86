@@ -1,4 +1,4 @@
-module NanoParsec where
+module Assembler.NanoParsec where
 
 import Data.Char
 import Control.Applicative
@@ -20,7 +20,7 @@ instance Monad Parser where
 
 -- 'and' semantics
 instance MonadPlus Parser where
-  mzero     = Parser (\s -> [])
+  mzero     = Parser (\_ -> [])
   mplus p q = Parser (\s -> parse p s ++ parse q s)
 
 -- 'or' semantics

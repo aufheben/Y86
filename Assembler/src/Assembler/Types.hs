@@ -1,4 +1,4 @@
-module Types where
+module Assembler.Types where
 
 import Data.Word
 

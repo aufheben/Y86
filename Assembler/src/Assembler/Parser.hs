@@ -1,10 +1,9 @@
-module Parser where
+module Assembler.Parser (entities) where
 
-import Data.Char
+import Assembler.NanoParsec
+import Assembler.Types
 import Data.Maybe
 import Control.Applicative
-import NanoParsec
-import Types
 
 comment :: Parser ()
 comment = do
