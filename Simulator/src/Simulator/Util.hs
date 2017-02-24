@@ -46,8 +46,8 @@ formatCpuState CpuState {..} =
   unlines
     [ unwords ["PC:", f _pc, "ZF:", g _zF, "SF:", g _sF,
                "OF:", g _oF, "STAT:", show _stat],
-      unwords ["%eax:", f _eax, "%ecx:", f _ecx, "%edx:", f _edx, "%ebx:", f _ebx,
-               "%esi:", f _esi, "%edi:", f _edi, "%esp:", f _esp, "%ebp:", f _ebp]
+      unwords ["%eax:", f _eax, "%ecx:", f _ecx, "%edx:", f _edx, "%ebx:", f _ebx],
+      unwords ["%esi:", f _esi, "%edi:", f _edi, "%esp:", f _esp, "%ebp:", f _ebp]
     ]
   where
   f = showHex
