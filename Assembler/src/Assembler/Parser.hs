@@ -98,7 +98,7 @@ instruction = do
     dst <- word
     return (instr dst, 5)
 
-register :: Parser Reg
+register :: Parser RegId
 register = do
   char '%'
   s <- word

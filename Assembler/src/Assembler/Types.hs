@@ -5,18 +5,18 @@ import Data.Word
 -- Constant is either an int or a label which resolves to an int
 type Label    = String
 type Constant = Either Int Label
-type Reg      = Word8
+type RegId    = Word8
 
 data Instr = Halt
            | Nop
-           | Rrmovl Reg Reg
-           | Irmovl Reg Constant
-           | Rmmovl Reg Reg Int
-           | Mrmovl Reg Reg Int
-           | Addl   Reg Reg
-           | Subl   Reg Reg
-           | Andl   Reg Reg
-           | Xorl   Reg Reg
+           | Rrmovl RegId RegId
+           | Irmovl RegId Constant
+           | Rmmovl RegId RegId Int
+           | Mrmovl RegId RegId Int
+           | Addl   RegId RegId
+           | Subl   RegId RegId
+           | Andl   RegId RegId
+           | Xorl   RegId RegId
            | Jmp    Label
            | Jle    Label
            | Jl     Label
@@ -24,16 +24,16 @@ data Instr = Halt
            | Jne    Label
            | Jge    Label
            | Jg     Label
-           | Cmovle Reg Reg
-           | Cmovl  Reg Reg
-           | Cmove  Reg Reg
-           | Cmovne Reg Reg
-           | Cmovge Reg Reg
-           | Cmovg  Reg Reg
+           | Cmovle RegId RegId
+           | Cmovl  RegId RegId
+           | Cmove  RegId RegId
+           | Cmovne RegId RegId
+           | Cmovge RegId RegId
+           | Cmovg  RegId RegId
            | Call   Label
            | Ret
-           | Pushl  Reg
-           | Popl   Reg
+           | Pushl  RegId
+           | Popl   RegId
     deriving Show
 
 data Entity = Instr (Instr, Int)
