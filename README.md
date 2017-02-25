@@ -25,7 +25,6 @@ stack install
 # run program in the simulator
 yis asm/asum.ybo
 > run
-> run
 PC: 0x00000012 ZF: 1 SF: 0 OF: 0 STAT: HLT
 %eax: 0x0000abcd %ecx: 0x00000024 %edx: 0x00000000 %ebx: 0xffffffff
 %esi: 0x0000a000 %edi: 0x00000000 %esp: 0x00000100 %ebp: 0x00000100
@@ -168,7 +167,7 @@ data CpuState = CpuState
 makeLenses ''CpuState
 ```
 
-The RAM is hidden in a Reader monad so that we don't have to pass it to every function:
+The RAM is hidden in a Reader monad so that we don't have to pass it around everywhere:
 
 ```haskell
 type SimIO = ReaderT RAM IO
@@ -179,8 +178,8 @@ contains the RAM-related utilty functions.
 
 The workflow of simulator is straightforward: the program (.ybo file) is first loaded
 into RAM, then the user could either hit Enter to step over the instructions, or type `run`
-to execute the program and inspect the CPU states. Use `x/N ADDR` (borrowed from GDB) to
-examine N bytes of memory at addresses ADDR. `reset` will reset the CPU states as well as
+to execute the program and observe the final CPU states. Use `x/N ADDR` (borrowed from GDB)
+to examine N bytes of memory at addresses ADDR. `reset` will reset the CPU states as well as
 the memory.
 
 To execute an instruction, the `step` function takes an old CpuState and returns a new
@@ -220,7 +219,7 @@ runProgram s =
 The meat of the simulator, i.e. the actual ISA implementation, can be found in [ISA.hs](https://github.com/aufheben/Y86/blob/master/Simulator/src/Simulator/ISA.hs).
 The combination of the `RecordWildCards` GHC extension and the `MonadState` combinators
 from [lens](https://hackage.haskell.org/package/lens/docs/Control-Lens-Setter.html#g:5)
-makes it quite pleasant to write code in a "imperative style":
+makes it quite pleasant to write code in an "imperative style":
 
 ```haskell
 exec s i a = return (flip execState s a, i)
