@@ -1,0 +1,8 @@
+stack install BNFC
+stack install happy
+stack install alex
+bnfc -m -haskell C.cf
+make
+# Somehow this will show error when run by 'make', due to that 'ghc' is an alias in our system
+ghc --make TestC.hs -o TestC
+./TestC a.c 
