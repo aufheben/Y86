@@ -19,7 +19,9 @@ Progr [
               (NoPointer (Name (Ident "b")))
               (InitExpr (Efunkpar (Evar (Ident "incr")) [Evar (Ident "a")]))]
         ]
-      [JumpS (SjumpFive (Evar (Ident "b")))]
+        [
+          JumpS (SjumpFive (Evar (Ident "b")))
+        ]
     )
   )
 ]
