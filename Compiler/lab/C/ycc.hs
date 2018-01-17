@@ -14,6 +14,26 @@ import ErrM
 
 type ParseFun = [Token] -> Err Program
 
+do_compile [] = return ()
+do_compile (decl:ext_decls) = do
+  case decl of
+    Afunc (OldFunc decl_specifiers declarator decs compound_stm) ->
+      putStrLn "Afunc OldFunc"
+    Afunc (NewFunc decl_specifiers declarator compound_stm) ->
+      putStrLn "Afunc NewFunc"
+    Afunc (OldFuncInt declarator decs compound_stm) ->
+      putStrLn "Afunc OldFuncInt"
+    Afunc (NewFuncInt declarator compound_stm) ->
+      putStrLn "Afunc NewFuncInt"
+    Global (NoDeclarator decl_specifiers) ->
+      putStrLn "Global NoDeclarator"
+    Global (Declarators decl_specifiers init_declarator) ->
+      putStrLn "Global Declarators"
+  do_compile ext_decls
+
+compile :: Program -> IO ()
+compile (Progr ext_decls) = do_compile ext_decls
+
 runFile :: ParseFun -> FilePath -> IO ()
 runFile p f = putStrLn f >> readFile f >>= run p
 
@@ -26,6 +46,7 @@ run p s = let ts = myLexer s in case p ts of
                           exitFailure
            Ok  tree -> do putStrLn "\nParse Successful!"
                           showTree tree
+                          compile tree
                           exitSuccess
 
 showTree :: Program -> IO ()
