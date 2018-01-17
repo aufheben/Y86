@@ -12,12 +12,12 @@ import AbsC
 
 import ErrM
 
-type ParseFun a = [Token] -> Err a
+type ParseFun = [Token] -> Err Program
 
-runFile :: (Print a, Show a) => ParseFun a -> FilePath -> IO ()
+runFile :: ParseFun -> FilePath -> IO ()
 runFile p f = putStrLn f >> readFile f >>= run p
 
-run :: (Print a, Show a) => ParseFun a -> String -> IO ()
+run :: ParseFun -> String -> IO ()
 run p s = let ts = myLexer s in case p ts of
            Bad s    -> do putStrLn "\nParse              Failed...\n"
                           putStrLn "Tokens:"
@@ -28,7 +28,7 @@ run p s = let ts = myLexer s in case p ts of
                           showTree tree
                           exitSuccess
 
-showTree :: (Show a, Print a) => a -> IO ()
+showTree :: Program -> IO ()
 showTree tree = do
   putStrLn $ "\n[Abstract Syntax]\n\n" ++ show tree
   putStrLn $ "\n[Linearized tree]\n\n" ++ printTree tree
