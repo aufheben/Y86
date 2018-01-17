@@ -36,15 +36,36 @@ do_compile (decl:ext_decls) = do
       putStrLn "Global Declarators"
   do_compile ext_decls
 
-compile_main :: External_declaration -> FuncTable -> IO ()
-compile_main main_decl func_table =
+compileInitDeclarators :: [Init_declarator] -> IO ()
+compileInitDeclarators [] = return ()
+compileInitDeclarators (dec:decs) =
+  case dec of
+    OnlyDecl _ -> putStrLn "OnlyDecl"
+    InitDecl (BeginPointer _ _) _ -> putStrLn "InitDecl BeginPointer"
+    InitDecl (NoPointer (Name (Ident name))) (InitExpr exp) -> do
+      putStrLn "InitDecl NoPointer"
+    _ -> putStrLn "InitDecl NoPointer"
+
+compileDecs :: [Dec] -> IO ()
+compileDecs [] = return ()
+compileDecs (dec:decs) =
+  case dec of
+    Declarators decl_specifiers init_declarators -> do
+      compileInitDeclarators init_declarators
+      compileDecs decs
+    _ -> putStrLn "NoDeclarator"
+
+compileMain :: External_declaration -> FuncTable -> IO ()
+compileMain main_decl func_table =
   case main_decl of
     Afunc (NewFunc decl_specifiers declarator compound_stm) -> do
       case compound_stm of
-        ScompOne      -> putStrLn "ScompOne"
-        ScompTwo _    -> putStrLn "ScompTwo"
-        ScompThree _  -> putStrLn "ScompThree"
-        ScompFour _ _ -> putStrLn "ScompFour"
+        ScompOne -> putStrLn "ScompOne"
+        ScompTwo stms -> putStrLn "ScompTwo"
+        ScompThree decs -> putStrLn "ScompThree"
+        ScompFour decs stms -> do
+          putStrLn "ScompFour"
+          compileDecs decs
     _ -> putStrLn "error: Afunc expected for 'main'"
 
 buildFuncTable :: [External_declaration] -> FuncTable
@@ -65,7 +86,7 @@ compile (Progr ext_decls) = do
   putStrLn $ "# " <> show (M.size func_table) <> " functions defined"
   -- look for "main"
   case M.lookup "main" func_table of
-    Just main_decl -> compile_main main_decl func_table
+    Just main_decl -> compileMain main_decl func_table
     _ -> putStrLn "error: 'main' not defined"
 
 runFile :: ParseFun -> FilePath -> IO ()
