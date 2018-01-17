@@ -16,6 +16,7 @@ import ErrM
 import qualified Data.Map as M
 
 type ParseFun = [Token] -> Err Program
+type FuncTable = M.Map String External_declaration
 
 do_compile :: [External_declaration] -> IO ()
 do_compile [] = return ()
@@ -35,7 +36,18 @@ do_compile (decl:ext_decls) = do
       putStrLn "Global Declarators"
   do_compile ext_decls
 
-buildFuncTable :: [External_declaration] -> M.Map String External_declaration
+compile_main :: External_declaration -> FuncTable -> IO ()
+compile_main main_decl func_table =
+  case main_decl of
+    Afunc (NewFunc decl_specifiers declarator compound_stm) -> do
+      case compound_stm of
+        ScompOne      -> putStrLn "ScompOne"
+        ScompTwo _    -> putStrLn "ScompTwo"
+        ScompThree _  -> putStrLn "ScompThree"
+        ScompFour _ _ -> putStrLn "ScompFour"
+    _ -> putStrLn "error: Afunc expected for 'main'"
+
+buildFuncTable :: [External_declaration] -> FuncTable
 buildFuncTable xs = build_func_table xs M.empty
   where
   build_func_table [] m = m
@@ -53,10 +65,8 @@ compile (Progr ext_decls) = do
   putStrLn $ "# " <> show (M.size func_table) <> " functions defined"
   -- look for "main"
   case M.lookup "main" func_table of
-    Just main_decl -> do
-      putStrLn "main function found"
-      do_compile ext_decls
-    _ -> putStrLn "main function not defined"
+    Just main_decl -> compile_main main_decl func_table
+    _ -> putStrLn "error: 'main' not defined"
 
 runFile :: ParseFun -> FilePath -> IO ()
 runFile p f = putStrLn f >> readFile f >>= run p
