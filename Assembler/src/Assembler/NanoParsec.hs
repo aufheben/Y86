@@ -38,7 +38,7 @@ runParser :: Parser a -> String -> a
 runParser m s =
   case parse m s of
     [(res, "")] -> res
-    [(_, _)]    -> error "Parser did not consume entire stream"
+    [(_, a)]    -> error $ "Parser did not consume entire stream: " ++ a
     _           -> error "Parser error"
 
 item :: Parser Char
