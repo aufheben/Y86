@@ -124,6 +124,7 @@ entity = do
 
 entities :: Parser [Entity]
 entities = do
+  spaces -- in case the file starts with spaces
   xs <- many entity
   many comment
   return xs
