@@ -129,6 +129,7 @@ main = do
     L.writeFile ybo $ toLazyByteString builder
     write_data ybo
 
+  -- .data file for FPGA
   write_data path = do
     xs <- L.unpack <$> L.readFile path
     let builder = mconcat $ map (string8 . printf "%08b\n") xs
