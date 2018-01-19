@@ -79,7 +79,7 @@ token p = do
   return a
 
 word :: Parser String
-word = token (some $ satisfy isAlpha)
+word = token (some $ satisfy isAlphaNum)
 
 number :: Parser Int
 number = token $ do
