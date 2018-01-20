@@ -18,6 +18,12 @@ import qualified Data.Map as M
 type ParseFun = [Token] -> Err Program
 type FuncTable = M.Map String External_declaration
 
+emit' :: String -> IO ()
+emit' = putStrLn
+
+emit :: String -> IO ()
+emit s = emit' $ "\t" <> s
+
 do_compile :: [External_declaration] -> IO ()
 do_compile [] = return ()
 do_compile (decl:ext_decls) = do
@@ -36,6 +42,28 @@ do_compile (decl:ext_decls) = do
       putStrLn "Global Declarators"
   do_compile ext_decls
 
+compileExp :: Exp -> IO ()
+compileExp exp =
+  case exp of
+    Econst (Eint i) -> do
+      emit $ "irmovl $" <> show i <> ", %eax"
+    Eplus exp_a exp_b -> do
+      compileExp exp_a
+      emit $ "pushl %eax"
+      compileExp exp_b
+      emit $ "popl %ecx"
+      emit $ "addl %ecx, %eax"
+    Eminus exp_a exp_b -> do
+      compileExp exp_a
+      emit $ "pushl %eax"
+      compileExp exp_b
+      emit $ "popl %ecx"
+      emit $ "subl %eax, %ecx"
+      emit $ "rrmovl %ecx, %eax"
+    -- Etimes exp_a exp_b -> do
+    -- Ediv exp_a exp_b -> do
+    _ -> putStrLn "unhandled Exp"
+
 compileInitDeclarators :: [Init_declarator] -> IO ()
 compileInitDeclarators [] = return ()
 compileInitDeclarators (dec:decs) =
@@ -43,7 +71,7 @@ compileInitDeclarators (dec:decs) =
     OnlyDecl _ -> putStrLn "OnlyDecl"
     InitDecl (BeginPointer _ _) _ -> putStrLn "InitDecl BeginPointer"
     InitDecl (NoPointer (Name (Ident name))) (InitExpr exp) -> do
-      putStrLn "InitDecl NoPointer"
+      compileExp exp
     _ -> putStrLn "InitDecl NoPointer"
 
 compileDecs :: [Dec] -> IO ()
@@ -64,8 +92,8 @@ compileMain main_decl func_table =
         ScompTwo stms -> putStrLn "ScompTwo"
         ScompThree decs -> putStrLn "ScompThree"
         ScompFour decs stms -> do
-          putStrLn "ScompFour"
           compileDecs decs
+          emit "ret"
     _ -> putStrLn "error: Afunc expected for 'main'"
 
 buildFuncTable :: [External_declaration] -> FuncTable
@@ -86,7 +114,18 @@ compile (Progr ext_decls) = do
   putStrLn $ "# " <> show (M.size func_table) <> " functions defined"
   -- look for "main"
   case M.lookup "main" func_table of
-    Just main_decl -> compileMain main_decl func_table
+    Just main_decl -> do
+      emit ".pos 0"
+      emit' "init:"
+      emit "irmovl Stack, %esp"
+      emit "irmovl Stack, %ebp"
+      emit "call Main"
+      emit "halt"
+      emit' "Main:"
+      compileMain main_decl func_table
+      emit "" -- just an empty line for clarity
+      emit ".pos 0x400" -- TODO: calculate stack position
+      emit' "Stack:"
     _ -> putStrLn "error: 'main' not defined"
 
 runFile :: ParseFun -> FilePath -> IO ()
